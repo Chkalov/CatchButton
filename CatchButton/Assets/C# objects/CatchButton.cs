@@ -24,6 +24,8 @@ public class CatchButton : MonoBehaviour
 
 	#region PRIVATE FIELDS
 
+	private float upDelta, downDelta, leftDelta, rightDelta, minDelta;
+	//приватные переменные для определения дельты смещения
 
 	#endregion
 
@@ -35,28 +37,17 @@ public class CatchButton : MonoBehaviour
 			GUI.Box (activeZoneRect, "", activeZoneStyle);
 		}
 
-		if (GUI.Button (GetButtonRect (activeZoneRect, activeZoneOffset), "PRESS ME!", buttonStyle)) {
-			//Выйграл!!
-			print ("CatchButton " + "button pressed!");
+		if (GUI.Button (GetButtonRect (activeZoneRect, activeZoneOffset), "CATCH ME!", buttonStyle)) {
+			//Выйграл!! Показать эффект.
+			print ("CatchButton " + "Win!");
 		}
 
-		//var mousePosition = new Vector2 (Input.mousePosition.x, (Screen.height - Input.mousePosition.y));
-	 
-		//GUI.Button (buttonRect, mousePosition.ToString ());
-
-		//var checkRect = new Rect ((buttonRect.left - buttonOffset), (buttonRect.top - buttonOffset), (buttonRect.width + 2 * buttonOffset), (buttonRect.height + 2 * buttonOffset));
-
-		//CheckMousePosition (mousePosition, checkRect);
+		CheckMousePosition (GetMousePosition (), activeZoneRect);
 	}
 
 	#endregion
 
 	#region PRIVATE METHODS
-
-	private Rect GetButtonRect (Rect activeZoneRect, float offSet)
-	{
-		return new Rect (activeZoneRect.x + offSet, activeZoneRect.y + offSet, activeZoneRect.width - 2 * offSet, activeZoneRect.height - 2 * offSet);
-	}
 
 	private void CheckMousePosition (Vector2 mousePosition, Rect rect)
 	{
@@ -64,42 +55,61 @@ public class CatchButton : MonoBehaviour
 			return;
 		}
 
-		/*var upDelta = mousePosition.y - rect.y;
-		var downDelta = (rect.y + rect.height) - mousePosition.y;
+		GetDeltas (mousePosition, rect);
+		MoveButton ();
 
-		var leftDelta = mousePosition.x - rect.x;
-		var rightDelta = rect.x + rect.width - mousePosition.x;
+	}
 
+	private void MoveButton ()
+	{
+		if (minDelta == upDelta) {
 
-		if (upDelta < downDelta && upDelta < leftDelta && upDelta < rightDelta) {
-			print ("move down");
-
-			buttonRect = new Rect (buttonRect.x, buttonRect.y + upDelta, buttonRect.width, buttonRect.height);
+			activeZoneRect = new Rect (activeZoneRect.x, activeZoneRect.y + upDelta, activeZoneRect.width, activeZoneRect.height);
+			return;
 		}
 
-		if (downDelta < upDelta && downDelta < leftDelta && downDelta < rightDelta) {
-			print ("move up");
+		if (minDelta == downDelta) {
 
-			buttonRect = new Rect (buttonRect.x, buttonRect.y - downDelta, buttonRect.width, buttonRect.height);
+			activeZoneRect = new Rect (activeZoneRect.x, activeZoneRect.y - downDelta, activeZoneRect.width, activeZoneRect.height);
+			return;
 		}
 
-		if (leftDelta < upDelta && leftDelta < downDelta && leftDelta < rightDelta) {
-			print ("move right");
-
-			buttonRect = new Rect (buttonRect.x + leftDelta, buttonRect.y, buttonRect.width, buttonRect.height);
+		if (minDelta == leftDelta) {
+					
+			activeZoneRect = new Rect (activeZoneRect.x + leftDelta, activeZoneRect.y, activeZoneRect.width, activeZoneRect.height);
+			return;
 		}
 
-		if (rightDelta < upDelta && rightDelta < downDelta && rightDelta < leftDelta) {
-			print ("move left");
+		if (minDelta == rightDelta) {
 
-			buttonRect = new Rect (buttonRect.x - rightDelta, buttonRect.y, buttonRect.width, buttonRect.height);
-		}*/
+			activeZoneRect = new Rect (activeZoneRect.x - rightDelta, activeZoneRect.y, activeZoneRect.width, activeZoneRect.height);
+			return;
+		}
+	}
 
+	private void GetDeltas (Vector2 mousePosition, Rect rect)
+	{
+		upDelta = mousePosition.y - rect.yMin;
+		downDelta = rect.yMax - mousePosition.y;
+		leftDelta = mousePosition.x - rect.xMin;
+		rightDelta = rect.xMax - mousePosition.x;
+		minDelta = Mathf.Min (upDelta, downDelta, leftDelta, rightDelta);
 	}
 
 	private bool IsPointOnRect (Vector2 point, Rect rect)
 	{
-		return (point.x >= rect.left && point.x <= rect.left + rect.width) && (point.y >= rect.top && point.y <= rect.top + rect.height);
+		return point.x > rect.xMin && point.x < rect.xMax && point.y > rect.yMin && point.y < rect.yMax;
+	}
+
+	private Rect GetButtonRect (Rect activeZoneRect, float offSet)
+	{
+		return new Rect (activeZoneRect.x + offSet, activeZoneRect.y + offSet, activeZoneRect.width - 2 * offSet, activeZoneRect.height - 2 * offSet);
+	}
+
+	private Vector2 GetMousePosition ()
+	{
+		var temp = Input.mousePosition;
+		return new Vector2 (temp.x, Screen.height - temp.y);
 	}
 
 	#endregion
